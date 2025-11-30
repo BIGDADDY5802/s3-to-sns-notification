@@ -5,102 +5,103 @@
 
 ### Step 1: Create an S3 Bucket
 
-    1. Go to your AWS Console and search S3 then select S3.
+1. Go to your AWS Console and search S3 then select S3.
 
-    ![](/attachments/select-s3.png)
+![](/attachments/select-s3.png)
 
-    2. Click create Bucket.
+2. Click create Bucket.
 
-    ![](/attachments/create-bucket.png)
+![](/attachments/create-bucket.png)
 
-    3. Give bucket a unique name as buckets require global uniqueness.<s3snslambda-project>
+3. Give bucket a unique name as buckets require global uniqueness.<s3snslambda-project>
 
-    4. Make sure you know the region you are in, (us-east-1)
+4. Make sure you know the region you are in, (us-east-1)
 
-    5. Go to the bottom of the screen and create bucket.
+5. Go to the bottom of the screen and create bucket.
 
-    ![](/attachments/create-bucket.png)
+![](/attachments/create-bucket.png)
 
 ### Step 2: Create an SNS Topic
 
-    1. In your AWS Console search SNS and select Simple Notification Service.
-            (open link in new tab by right clicking and selecting open link in new tab)
+1. In your AWS Console search SNS and select Simple Notification Service.
+(open link in new tab by right clicking and selecting open link in new tab)
 
-    2. Click Topics in the left pane of screen.
+2. Click Topics in the left pane of screen.
 
-    ![](/attachments/select-topic.png)
+![](/attachments/select-topic.png)
 
-    3. Create Topic.
+3. Create Topic.
 
-    ![](/attachments/create-topic.png)
+![](/attachments/create-topic.png)
 
-    4. Select Standard Topic.
+4. Select Standard Topic.
 
-    ![](/attachments/select-standard.png)
+![](/attachments/select-standard.png)
 
-    5. Enter a name for the Topic (e.g., s3-email-notification)
+5. Enter a name for the Topic (e.g., s3-email-notification)
 
-    ![](/attachments/name-topic.png)
+![](/attachments/name-topic.png)
 
-    6. Create topic.
+6. Create topic.
 
-    ![](/attachments/create-topic.png)
+![](/attachments/create-topic.png)
 
-    7. Copy the Arn for SNS as you will need this later.
-        (arn:)
+7. Copy the Arn for SNS as you will need this later.
+(arn:)
 
 ### Step 3: Create Subscription (Email)
 
-    1. Click Create Subscription.
+1. Click Create Subscription.
 
-    ![](/attachments/create-subscription.png)
+![](/attachments/create-subscription.png)
 
-    2. Select Protocol <email>
+2. Select Protocol <email>
 
-    ![](/attachments/select-protocol.png)
+![](/attachments/select-protocol.png)
 
-    3. Make your email the endpoint.
+3. Make your email the endpoint.
 
-    4. Create Subscription.
+4. Create Subscription.
 
-    ![](/attachments/create-subscription.png)
+![](/attachments/create-subscription.png)
 
-    5. Check your email to confirm subscription. (check spam if you don't see it)
+5. Check your email to confirm subscription. (check spam if you don't see it)
 
 ### Step 4: Create a Lambda Function
 
-    1. Search Lambda in the search bar and select Lambda.
+1. Search Lambda in the search bar and select Lambda.
 
-    ![](/attachments/select-lambda.png)
+![](/attachments/select-lambda.png)
 
-    2. Select Create Function.
+2. Select Create Function.
 
-    ![](/attachments/create-function.png)
+![](/attachments/create-function.png)
 
-    3. Author from Scratch.
+3. Author from Scratch.
 
-    ![](/attachments/a-f-s.png)
+![](/attachments/a-f-s.png)
 
-    4. Name Function S3toSNSLambda.
+4. Name Function S3toSNSLambda.
 
-    5. Runtime Select Pyhton 3.?
+5. Runtime Select Pyhton 3.?
 
-    6. Expand "Change Default Execution Role under permissions."
-        Choose "Create a new role with basic Lambda Permissions."
+6. Expand "Change Default Execution Role under permissions."
+-Choose "Create a new role with basic Lambda Permissions."
 
-        ![](/attachments/lamda-config.png)
+![](/attachments/lamda-config.png)
 
-    7. Click Create Function
+7. Click Create Function
 
-    ![](/attachments/create-function.png)
+![](/attachments/create-function.png)
 ### Step 5: Add Code to Lambda
 
-    1. Open the Lambda Function.
+1. Open the Lambda Function.
 
-    2. Scroll down to Code Source.
+2. Scroll down to Code Source.
 
-    3. Replace Default Code with:
-'''
+3. Replace Default Code with:
+
+'''python
 import json
 import boto3
 import os
@@ -190,40 +191,38 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps(f"Lambda execution failed: {str(e)}")
         }
+'''python
 
+(Thx Derrick) https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py
 
-'''
-
-   (Thx Derrick) https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py
-
-    4. Click Deploy
+4. Click Deploy
 
 ### Step 6: Attach SNS Publish Permissions to Lambda
 
-    1. Go to the IAM Console, Select Roles.
+1. Go to the IAM Console, Select Roles.
 
-    2. Find the IAM Role that was created for the Lambda Function
+2. Find the IAM Role that was created for the Lambda Function
         (S3ToSNSLambda)
 
-    3. Click on the permissions, add the permissions, attach policies.
+3. Click on the permissions, add the permissions, attach policies.
 
-    4. Search for and attach:
-        AWSLambdaBasicExecutionRole
-        AmazonSNSFullAccess (or create a custom policy with sns:Publish)
+4. Search for and attach:
+AWSLambdaBasicExecutionRole
+AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 
 ### Step 7: Attach SNS Policy to Allow Lambda to Publish
 
-    1. Go back to SNS Tab.
+1. Go back to SNS Tab.
 
-    2. Click on your SNS Topic.
+2. Click on your SNS Topic.
 
-    3. Scroll down to Access Policy section and edit Poicy.
+3. Scroll down to Access Policy section and edit Poicy.
 
-    ![](/attachments/attach-policies.png)
+![](/attachments/attach-policies.png)
 
-    Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
+Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
 
-    '''
+'''json
     {
   "Version": "2012-10-17",
   "Statement": [
@@ -233,64 +232,63 @@ def lambda_handler(event, context):
         "Service": "lambda.amazonaws.com"
       },
       "Action": "SNS:Publish",
-      "Resource": "arn:aws:sns:us-east-1:778185677715:s3-email-notification",
+      "Resource": "arn:aws:sns:us-east-1:Your_account_number_here:s3-email-notification",
       "Condition": {
         "ArnEquals": {
-          "aws:SourceArn": "arn:aws:lambda:us-east-1:778185677715:function:S3ToSNSLambda"
+          "aws:SourceArn": "arn:aws:lambda:us-east-1:Your_account_number_here:function:S3ToSNSLambda"
         }
       }
     }
   ]
 }
-'''
+'''json
 
-    4. Click Save Changes.
+4. Click Save Changes.
 
 ### Step 8: Configure S3# to Trigger Lambda
 
-    1. Go to S3 Tab.
+1. Go to S3 Tab.
 
-    2. Open your s3 bucket (s3snslambda-project)
+2. Open your s3 bucket (s3snslambda-project)
 
-    3. Click Properties, scroll to Event Notifications
+3. Click Properties, scroll to Event Notifications
 
-    ![](/attachments/select-properties.png)
+![](/attachments/select-properties.png)
 
-    4. Click Create Event Notification.
+4. Click Create Event Notification.
 
-    ![](/attachments/event-notification.png)
+![](/attachments/event-notification.png)
 
-    5. Event name (TriggerLambdaOnUpload)
+5. Event name (TriggerLambdaOnUpload)
 
-    6. Event types (All object create events [PUT])
+6. Event types (All object create events [PUT])
 
-    ![](/attachments/put.png)
+![](/attachments/put.png)
 
-    7. Destination -> Select Lambda Function
+7. Destination -> Select Lambda Function
 
-    8. Choose S3toSNSLambda.
+8. Choose S3toSNSLambda.
 
-    9. Click Save.
+9. Click Save.
 
 
 ### Step 9: Test Setup
 
-    1. Go to S3 and upload a file into your bucket.
+1. Go to S3 and upload a file into your bucket.
 
-    2. Wait a few seconds to a few minutes.
+2. Wait a few seconds to a few minutes.
 
-    3. Check your email inbox for the SNS notification.
+3. Check your email inbox for the SNS notification.
 
-    ![](/attachments/confirmation.png)
+![](/attachments/confirmation.png)
 
 
 
 ### Troubleshooting if there is no delivery
 
-    1. First test sns directly from the console, if working then go to role and 
+1. First test sns directly from the console, if working then go to role and 
     check that you gave proper permissions.
 
-    2. If doesn't work still retry entire and be very careful.
+2. If doesn't work still retry entire and be very careful.
 
-    3. Check to make sure your topic ARN is in the python code where the environment variable is being created...
-
+3. Check to make sure your topic ARN is in the python code where the environment variable is being created...
