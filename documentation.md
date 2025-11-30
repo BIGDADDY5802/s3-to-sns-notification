@@ -42,9 +42,12 @@
 
 ![](/attachments/name-topic.png)
 
+**You must also put a name in the display name**
+
 6. Create topic.
 
 ![](/attachments/create-topic.png)
+
 
 7. Copy the Arn for SNS as you will need this later.
 (arn:)
