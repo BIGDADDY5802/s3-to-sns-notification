@@ -244,10 +244,10 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
             "Service": "lambda.amazonaws.com"
         },
         "Action": "SNS:Publish",
-        "Resource": "arn:aws:sns:us-east-1:778185677715:s3-email-notification",
+        "Resource": "arn:aws:sns:us-east-1:Your_account_number_here:s3-email-notification",
         "Condition": {
             "ArnEquals": {
-            "aws:SourceArn": "arn:aws:lambda:us-east-1:778185677715:function:S3ToSNSLambda"
+            "aws:SourceArn": "arn:aws:lambda:us-east-1:Your_account_number_here:function:S3ToSNSLambda"
             }
         }
         }
