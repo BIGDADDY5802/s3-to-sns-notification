@@ -9,11 +9,11 @@
 
     1. Go to your AWS Console and search S3 then select S3.
 
-    ![](/attachments/select-s3.png)
+![](/attachments/select-s3.png)
 
     2. Click create Bucket.
 
-    ![](/attachments/create-bucket.png)
+![](/attachments/create-bucket.png)
 
     3. Give bucket a unique name as buckets require global uniqueness.<s3snslambda-project>
 
@@ -21,7 +21,7 @@
 
     5. Go to the bottom of the screen and create bucket.
 
-    ![](/attachments/create-bucket.png)
+![](/attachments/create-bucket.png)
 
 ### Step 2: Create an SNS Topic
 
@@ -30,23 +30,23 @@
 
     2. Click Topics in the left pane of screen.
 
-    ![](/attachments/select-topic.png)
+![](/attachments/select-topic.png)
 
     3. Create Topic.
 
-    ![](/attachments/create-topic.png)
+![](/attachments/create-topic.png)
 
     4. Select Standard Topic.
 
-    ![](/attachments/select-standard.png)
+![](/attachments/select-standard.png)
 
     5. Enter a name for the Topic (e.g., s3-email-notification)
 
-    ![](/attachments/name-topic.png)
+![](/attachments/name-topic.png)
 
     6. Create topic.
 
-    ![](/attachments/create-topic.png)
+![](/attachments/create-topic.png)
 
     7. Copy the Arn for SNS as you will need this later.
         (arn:)
@@ -55,17 +55,17 @@
 
     1. Click Create Subscription.
 
-    ![](/attachments/create-subscription.png)
+![](/attachments/create-subscription.png)
 
     2. Select Protocol <email>
 
-    ![](/attachments/select-protocol.png)
+![](/attachments/select-protocol.png)
 
     3. Make your email the endpoint.
 
     4. Create Subscription.
 
-    ![](/attachments/create-subscription.png)
+![](/attachments/create-subscription.png)
 
     5. Check your email to confirm subscription. (check spam if you don't see it)
 
@@ -73,15 +73,15 @@
 
     1. Search Lambda in the search bar and select Lambda.
 
-    ![](/attachments/select-lambda.png)
+![](/attachments/select-lambda.png)
 
     2. Select Create Function.
 
-    ![](/attachments/create-function.png)
+![](/attachments/create-function.png)
 
     3. Author from Scratch.
 
-    ![](/attachments/a-f-s.png)
+![](/attachments/a-f-s.png)
 
     4. Name Function S3toSNSLambda.
 
@@ -90,11 +90,11 @@
     6. Expand "Change Default Execution Role under permissions."
         Choose "Create a new role with basic Lambda Permissions."
 
-        ![](/attachments/lamda-config.png)
+![](/attachments/lamda-config.png)
 
     7. Click Create Function
 
-    ![](/attachments/create-function.png)
+![](/attachments/create-function.png)
 ### Step 5: Add Code to Lambda
 
     1. Open the Lambda Function.
@@ -109,13 +109,13 @@ import os
 import traceback
 import logging
 
-# Set up logging
+#Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 sns_client = boto3.client('sns')
 
-# Safer environment variable access with default/fallback
+#Safer environment variable access with default/fallback
 SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN', '')
 
 def lambda_handler(event, context):
@@ -128,7 +128,7 @@ def lambda_handler(event, context):
                 "body": json.dumps("SNS_TOPIC_ARN environment variable is missing")
             }
         
-        # Validate event structure
+        #Validate event structure
         if not isinstance(event, dict):
             logger.error("Event is not a dict")
             return {"statusCode": 400, "body": "Invalid event format"}
@@ -221,7 +221,7 @@ def lambda_handler(event, context):
 
     3. Scroll down to Access Policy section and edit Poicy.
 
-    ![](/attachments/attach-policies.png)
+![](/attachments/attach-policies.png)
 
     Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
 
@@ -256,17 +256,17 @@ def lambda_handler(event, context):
 
     3. Click Properties, scroll to Event Notifications
 
-    ![](/attachments/select-properties.png)
+![](/attachments/select-properties.png)
 
     4. Click Create Event Notification.
 
-    ![](/attachments/event-notification.png)
+![](/attachments/event-notification.png)
 
     5. Event name (TriggerLambdaOnUpload)
 
     6. Event types (All object create events [PUT])
 
-    ![](/attachments/put.png)
+![](/attachments/put.png)
 
     7. Destination -> Select Lambda Function
 
@@ -283,7 +283,7 @@ def lambda_handler(event, context):
 
     3. Check your email inbox for the SNS notification.
 
-    ![](/attachments/confirmation.png)
+![](/attachments/confirmation.png)
 
 
 
