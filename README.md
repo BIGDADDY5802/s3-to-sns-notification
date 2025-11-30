@@ -26,7 +26,7 @@
 ### Step 2: Create an SNS Topic
 
 1. In your AWS Console search SNS and select Simple Notification Service.
-            (open link in new tab by right clicking and selecting open link in new tab)
+(open link in new tab by right clicking and selecting open link in new tab)
 
 2. Click Topics in the left pane of screen.
 
@@ -51,7 +51,7 @@
 **You must also put a name in the display name**
 
 7. Copy the Arn for SNS as you will need this later.
-        (arn:)
+(arn:)
 
 ### Step 3: Create Subscription (Email)
 
@@ -106,8 +106,8 @@
 
 3. Replace Default Code with:
 
-'''py
 
+'''py
     import json
     import boto3
     import os
@@ -197,9 +197,9 @@
                 "statusCode": 500,
                 "body": json.dumps(f"Lambda execution failed: {str(e)}")
             }
-
-
 '''py
+
+
 
 (Thx Derrick) <https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py>
 
@@ -230,8 +230,8 @@ AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 
 Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
 
-'''
 
+'''
         {
     "Version": "2012-10-17",
     "Statement": [
@@ -250,7 +250,6 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
         }
     ]
     }
-
 '''
 
 4. Click Save Changes.

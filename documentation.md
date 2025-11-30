@@ -226,8 +226,8 @@ AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 
 Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name:
 
-'''
-        
+
+'''        
         {
     "Version": "2012-10-17",
     "Statement": [
@@ -246,7 +246,6 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
         }
     ]
     }
-
 '''
 
 4. Click Save Changes.
