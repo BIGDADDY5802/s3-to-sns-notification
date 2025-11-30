@@ -201,36 +201,36 @@
 
 '''py
 
-   (Thx Derrick) <https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py>
+(Thx Derrick) <https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py>
 
-    4. Click Deploy
+4. Click Deploy
 
 ### Step 6: Attach SNS Publish Permissions to Lambda
 
-    1. Go to the IAM Console, Select Roles.
+1. Go to the IAM Console, Select Roles.
 
-    2. Find the IAM Role that was created for the Lambda Function
+2. Find the IAM Role that was created for the Lambda Function
         (S3ToSNSLambda)
 
-    3. Click on the permissions, add the permissions, attach policies.
+3. Click on the permissions, add the permissions, attach policies.
 
-    4. Search for and attach:
-        AWSLambdaBasicExecutionRole
-        AmazonSNSFullAccess (or create a custom policy with sns:Publish)
+4. Search for and attach:
+AWSLambdaBasicExecutionRole
+AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 
 ### Step 7: Attach SNS Policy to Allow Lambda to Publish
 
-    1. Go back to SNS Tab.
+1. Go back to SNS Tab.
 
-    2. Click on your SNS Topic.
+2. Click on your SNS Topic.
 
-    3. Scroll down to Access Policy section and edit Poicy.
+3. Scroll down to Access Policy section and edit Poicy.
 
 ![](/attachments/attach-policies.png)
 
-    Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
+Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
 
-    '''json
+'''
 
         {
     "Version": "2012-10-17",
@@ -251,9 +251,9 @@
     ]
     }
 
-'''json
+'''
 
-    4. Click Save Changes.
+4. Click Save Changes.
 
 ### Step 8: Configure S3# to Trigger Lambda
 
@@ -265,7 +265,7 @@
 
 ![](/attachments/select-properties.png)
 
-    4. Click Create Event Notification.
+4. Click Create Event Notification.
 
 ![](/attachments/event-notification.png)
 

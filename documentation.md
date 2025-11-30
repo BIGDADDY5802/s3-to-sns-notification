@@ -224,28 +224,30 @@ AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 
 ![](/attachments/attach-policies.png)
 
-Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
+Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name:
 
-'''json
-    {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Action": "SNS:Publish",
-      "Resource": "arn:aws:sns:us-east-1:Your_account_number_here:s3-email-notification",
-      "Condition": {
-        "ArnEquals": {
-          "aws:SourceArn": "arn:aws:lambda:us-east-1:Your_account_number_here:function:S3ToSNSLambda"
+'''
+        
+        {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Effect": "Allow",
+        "Principal": {
+            "Service": "lambda.amazonaws.com"
+        },
+        "Action": "SNS:Publish",
+        "Resource": "arn:aws:sns:us-east-1:Your_account_number_here:s3-email-notification",
+        "Condition": {
+            "ArnEquals": {
+            "aws:SourceArn": "arn:aws:lambda:us-east-1:Your_account_number_here:function:S3ToSNSLambda"
+            }
         }
-      }
+        }
+    ]
     }
-  ]
-}
-'''json
+
+'''
 
 4. Click Save Changes.
 
