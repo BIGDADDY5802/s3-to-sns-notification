@@ -108,6 +108,7 @@
 
 
 '''py
+    
     import json
     import boto3
     import os
@@ -197,6 +198,7 @@
                 "statusCode": 500,
                 "body": json.dumps(f"Lambda execution failed: {str(e)}")
             }
+
 '''py
 
 
@@ -232,6 +234,7 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
 
 
 '''
+      
         {
     "Version": "2012-10-17",
     "Statement": [
@@ -250,6 +253,7 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
         }
     ]
     }
+
 '''
 
 4. Click Save Changes.
