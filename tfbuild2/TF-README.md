@@ -1,5 +1,15 @@
 # Packaging Lambda Code with Terraform
 
+![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC?logo=terraform)
+![AWS Lambda](https://img.shields.io/badge/Compute-AWS%20Lambda-FF9900?logo=awslambda)
+![Python](https://img.shields.io/badge/Runtime-Python%203.12-blue?logo=python)
+![AWS](https://img.shields.io/badge/Cloud-AWS-orange?logo=amazonaws)
+![HashiCorp](https://img.shields.io/badge/Provider-HashiCorp-black?logo=hashicorp)
+![Archive](https://img.shields.io/badge/Packaging-archive__file-lightgrey)
+![LocalFile](https://img.shields.io/badge/Resource-local__file-informational)
+![Beginner](https://img.shields.io/badge/Level-Beginner%20Friendly-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 A beginner's guide to the `local_file` → `archive_file` → `aws_lambda_function` pattern.
 
 ---
