@@ -1,6 +1,17 @@
 # S3 Upload Notification Pipeline
 ### Using Amazon S3, SNS, and Lambda
 
+![AWS](https://img.shields.io/badge/Cloud-AWS-orange?logo=amazonaws)
+![S3](https://img.shields.io/badge/Storage-Amazon%20S3-569A31?logo=amazons3)
+![Lambda](https://img.shields.io/badge/Compute-AWS%20Lambda-FF9900?logo=awslambda)
+![SNS](https://img.shields.io/badge/Messaging-Amazon%20SNS-FF4F00)
+![Python](https://img.shields.io/badge/Runtime-Python%203.12-blue?logo=python)
+![IAM](https://img.shields.io/badge/Security-IAM%20Roles-red?logo=amazonaws)
+![CloudWatch](https://img.shields.io/badge/Monitoring-CloudWatch-FF4F8B?logo=amazoncloudwatch)
+![EventDriven](https://img.shields.io/badge/Architecture-Event%20Driven-blueviolet)
+![Serverless](https://img.shields.io/badge/Serverless-Yes-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 > **What this guide builds:** An automated email notification system that triggers whenever a file is uploaded to an S3 bucket. When an object is created, S3 invokes a Lambda function, which publishes a formatted message to an SNS topic that delivers it to your email address.
 
 ---

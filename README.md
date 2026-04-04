@@ -297,7 +297,5 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
 1. First test sns directly from the console, if working then go to role and 
     check that you gave proper permissions.
 
-2. If doesn't work still retry entire and be very careful.
-
-3. Check to make sure your topic ARN is in the python code where the environment variable is being created...
+2. Check to make sure your topic ARN is in the python code where the environment variable is being created...
 
