@@ -1,302 +1,288 @@
-# Creating an SNS Notification for your s3 Uploads
+# S3 Upload Notification Pipeline
+### Using Amazon S3, SNS, and Lambda
 
-*When someone uploads to an S3 bucket you will recieve a notification*
+> **What this guide builds:** An automated email notification system that triggers whenever a file is uploaded to an S3 bucket. When an object is created, S3 invokes a Lambda function, which publishes a formatted message to an SNS topic that delivers it to your email address.
 
+---
 
-### Step 1: Create an S3 Bucket
+## Prerequisites
 
-1. Go to your AWS Console and search S3 then select S3.
+- An active AWS account with permissions to create S3, SNS, Lambda, and IAM resources
+- Access to the AWS Management Console
+- A valid email address to receive notifications
 
-![](/attachments/select-s3.png)
+---
 
-2. Click create Bucket.
+## Architecture Overview
 
-![](/attachments/create-bucket.png)
+```
+S3 Bucket
+    │  (ObjectCreated event)
+    ▼
+Lambda Function  ──►  SNS Topic  ──►  Email Subscription
+```
 
-3. Give bucket a unique name as buckets require global uniqueness.<s3snslambda-project>
+---
 
-4. Make sure you know the region you are in, (us-east-1)
+## Step 1: Create an S3 Bucket
 
-5. Go to the bottom of the screen and create bucket.
+1. In the AWS Console search bar, type **S3** and select **S3**.
+2. Click **Create bucket**.
+3. Enter a globally unique bucket name (e.g., `s3snslambda-project`).
+   > S3 bucket names must be globally unique across all AWS accounts and regions.
+4. Confirm your target region (e.g., `us-east-1`). Note this — you will need it in later steps.
+5. Leave all other settings at their defaults and click **Create bucket**.
 
-![](/attachments/create-bucket.png)
+---
 
-### Step 2: Create an SNS Topic
+## Step 2: Create an SNS Topic
 
-1. In your AWS Console search SNS and select Simple Notification Service.
-(open link in new tab by right clicking and selecting open link in new tab)
+1. In the AWS Console search bar, type **SNS** and select **Simple Notification Service**.
+2. In the left navigation pane, click **Topics**.
+3. Click **Create topic**.
+4. Select **Standard** as the topic type.
+5. Enter a name for the topic (e.g., `s3-email-notification`).
+6. In the **Display name** field, enter a display name. This field is required — it appears as the sender name in delivered emails.
+7. Click **Create topic**.
+8. On the topic detail page, copy the **ARN** and save it. You will need it when configuring the Lambda environment variable.
 
-2. Click Topics in the left pane of screen.
+---
 
-![](/attachments/select-topic.png)
+## Step 3: Create an Email Subscription
 
-3. Create Topic.
+1. On the topic detail page, click **Create subscription**.
+2. Set **Protocol** to `Email`.
+3. Set **Endpoint** to the email address where you want to receive notifications.
+4. Click **Create subscription**.
+5. Open your email inbox and confirm the subscription by clicking the link in the confirmation email AWS sends.
+   > Check your spam folder if the email does not appear within a few minutes. The subscription will remain in `PendingConfirmation` status until you confirm it — notifications will not be delivered until this step is complete.
 
-![](/attachments/create-topic.png)
+---
 
-4. Select Standard Topic.
+## Step 4: Create a Lambda Function
 
-![](/attachments/select-standard.png)
+1. In the AWS Console search bar, type **Lambda** and select **Lambda**.
+2. Click **Create function**.
+3. Select **Author from scratch**.
+4. Configure the function with the following settings:
 
-5. Enter a name for the Topic (e.g., s3-email-notification)
+   | Field | Value |
+   |---|---|
+   | Function name | `S3ToSNSLambda` |
+   | Runtime | Python 3.12 (or latest available) |
+   | Execution role | Create a new role with basic Lambda permissions |
 
-![](/attachments/name-topic.png)
+5. Click **Create function**.
 
-**You must also put a name in the display name**
+---
 
-6. Create topic.
+## Step 5: Deploy the Lambda Function Code
 
-![](/attachments/create-topic.png)
+1. Open the Lambda function you just created.
+2. Scroll down to the **Code source** section.
+3. Replace the default handler code with the following:
 
+```python
+import json
+import boto3
+import os
+import traceback
+import logging
 
-7. Copy the Arn for SNS as you will need this later.
-(arn:)
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-### Step 3: Create Subscription (Email)
+sns_client = boto3.client('sns')
+SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN', '')
 
-1. Click Create Subscription.
-
-![](/attachments/create-subscription.png)
-
-2. Select Protocol <email>
-
-![](/attachments/select-protocol.png)
-
-3. Make your email the endpoint.
-
-4. Create Subscription.
-
-![](/attachments/create-subscription.png)
-
-5. Check your email to confirm subscription. (check spam if you don't see it)
-
-### Step 4: Create a Lambda Function
-
-1. Search Lambda in the search bar and select Lambda.
-
-![](/attachments/select-lambda.png)
-
-2. Select Create Function.
-
-![](/attachments/create-function.png)
-
-3. Author from Scratch.
-
-![](/attachments/a-f-s.png)
-
-4. Name Function S3toSNSLambda.
-
-5. Runtime Select Pyhton 3.?
-
-6. Expand "Change Default Execution Role under permissions."
--Choose "Create a new role with basic Lambda Permissions."
-
-![](/attachments/lamda-config.png)
-
-7. Click Create Function
-
-![](/attachments/create-function.png)
-### Step 5: Add Code to Lambda
-
-1. Open the Lambda Function.
-
-2. Scroll down to Code Source.
-
-3. Replace Default Code with:
-
-'''py
-
-    import json
-    import boto3
-    import os
-    import traceback
-    import logging
-
-    # Set up logging
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    sns_client = boto3.client('sns')
-
-    # Safer environment variable access with default/fallback
-    SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN', '')
-
-    def lambda_handler(event, context):
-        try:
-            # Validate SNS topic ARN
-            if not SNS_TOPIC_ARN:
-                logger.error("SNS_TOPIC_ARN environment variable is missing or empty")
-                return {
-                    "statusCode": 500, 
-                    "body": json.dumps("SNS_TOPIC_ARN environment variable is missing")
-                }
-            
-            # Validate event structure
-            if not isinstance(event, dict):
-                logger.error("Event is not a dict")
-                return {"statusCode": 400, "body": "Invalid event format"}
-                
-            records = event.get('Records', [])
-            if not records:
-                logger.warning("No records found in event")
-                return {"statusCode": 400, "body": "No records found"}
-
-            sent_count = 0
-            for i, record in enumerate(records):
-                try:
-                    # Safe extraction with defaults
-                    s3_data = record.get('s3', {})
-                    bucket_data = s3_data.get('bucket', {})
-                    object_data = s3_data.get('object', {})
-                    
-                    bucket_name = bucket_data.get('name', 'Unknown')
-                    object_key = object_data.get('key', 'Unknown')
-                    event_time = record.get('eventTime', 'Unknown')
-                    event_name = record.get('eventName', 'Unknown')
-                    region = record.get('awsRegion', 'Unknown')
-                    object_size = object_data.get('size', 'Unknown')
-                    
-                    logger.info(f"Processing record {i+1}: bucket={bucket_name}, key={object_key}")
-                    
-                    # Format the email content
-                    message = (
-                        f"New S3 Upload Notification\n\n"
-                        f"Bucket: {bucket_name}\n"
-                        f"File: {object_key}\n"
-                        f"Size: {object_size} bytes\n"
-                        f"Event Time: {event_time}\n"
-                        f"Region: {region}\n"
-                        f"Event Type: {event_name}\n\n"
-                        f"View the file: https://s3.console.aws.amazon.com/s3/object/{bucket_name}?region={region}&prefix={object_key}"
-                    )
-
-                    # Send notification
-                    sns_client.publish(
-                        TopicArn=SNS_TOPIC_ARN,
-                        Message=message,
-                        Subject="S3 Upload Notification"
-                    )
-                    
-                    logger.info(f"Successfully sent notification for {object_key}")
-                    sent_count += 1
-                    
-                except Exception as record_error:
-                    logger.error(f"Failed to process record {i+1}: {str(record_error)}\n{traceback.format_exc()}")
-                    continue  # Continue processing other records
-            
-            return {
-                "statusCode": 200, 
-                "body": json.dumps(f"Successfully sent {sent_count} notifications")
-            }
-            
-        except Exception as e:
-            logger.error(f"Lambda handler failed: {str(e)}\n{traceback.format_exc()}")
+def lambda_handler(event, context):
+    try:
+        # Validate SNS topic ARN is configured
+        if not SNS_TOPIC_ARN:
+            logger.error("SNS_TOPIC_ARN environment variable is missing or empty")
             return {
                 "statusCode": 500,
-                "body": json.dumps(f"Lambda execution failed: {str(e)}")
+                "body": json.dumps("SNS_TOPIC_ARN environment variable is missing")
             }
 
-'''py
+        # Validate event structure
+        if not isinstance(event, dict):
+            logger.error("Event is not a dict")
+            return {"statusCode": 400, "body": "Invalid event format"}
 
-(Thx Derrick) https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py
+        records = event.get('Records', [])
+        if not records:
+            logger.warning("No records found in event")
+            return {"statusCode": 400, "body": "No records found"}
 
-4. Click Deploy
+        sent_count = 0
+        for i, record in enumerate(records):
+            try:
+                s3_data     = record.get('s3', {})
+                bucket_data = s3_data.get('bucket', {})
+                object_data = s3_data.get('object', {})
 
-### Step 6: Attach SNS Publish Permissions to Lambda
+                bucket_name = bucket_data.get('name', 'Unknown')
+                object_key  = object_data.get('key', 'Unknown')
+                event_time  = record.get('eventTime', 'Unknown')
+                event_name  = record.get('eventName', 'Unknown')
+                region      = record.get('awsRegion', 'Unknown')
+                object_size = object_data.get('size', 'Unknown')
 
-1. Go to the IAM Console, Select Roles.
+                logger.info(f"Processing record {i+1}: bucket={bucket_name}, key={object_key}")
 
-2. Find the IAM Role that was created for the Lambda Function
-        (S3ToSNSLambda)
+                message = (
+                    f"New S3 Upload Notification\n\n"
+                    f"Bucket: {bucket_name}\n"
+                    f"File:   {object_key}\n"
+                    f"Size:   {object_size} bytes\n"
+                    f"Time:   {event_time}\n"
+                    f"Region: {region}\n"
+                    f"Event:  {event_name}\n\n"
+                    f"View file: https://s3.console.aws.amazon.com/s3/object/{bucket_name}"
+                    f"?region={region}&prefix={object_key}"
+                )
 
-3. Click on the permissions, add the permissions, attach policies.
+                sns_client.publish(
+                    TopicArn=SNS_TOPIC_ARN,
+                    Message=message,
+                    Subject="S3 Upload Notification"
+                )
 
-4. Search for and attach:
-AWSLambdaBasicExecutionRole
-AmazonSNSFullAccess (or create a custom policy with sns:Publish)
+                logger.info(f"Successfully sent notification for {object_key}")
+                sent_count += 1
 
-### Step 7: Attach SNS Policy to Allow Lambda to Publish
+            except Exception as record_error:
+                logger.error(
+                    f"Failed to process record {i+1}: {str(record_error)}\n"
+                    f"{traceback.format_exc()}"
+                )
+                continue
 
-1. Go back to SNS Tab.
-
-2. Click on your SNS Topic.
-
-3. Scroll down to Access Policy section and edit Poicy.
-
-![](/attachments/attach-policies.png)
-
-Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name:
-
-
-'''        
-        
-        {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-        "Effect": "Allow",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
-        },
-        "Action": "SNS:Publish",
-        "Resource": "arn:aws:sns:us-east-1:Your_account_number_here:s3-email-notification",
-        "Condition": {
-            "ArnEquals": {
-            "aws:SourceArn": "arn:aws:lambda:us-east-1:Your_account_number_here:function:S3ToSNSLambda"
-            }
+        return {
+            "statusCode": 200,
+            "body": json.dumps(f"Successfully sent {sent_count} notifications")
         }
+
+    except Exception as e:
+        logger.error(f"Lambda handler failed: {str(e)}\n{traceback.format_exc()}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps(f"Lambda execution failed: {str(e)}")
         }
-    ]
+```
+
+> **Credit:** Original function by [Derrick](https://github.com/derrickSh43/SNSfromS3withLambda/blob/main/SNS.py)
+
+4. Click **Deploy**.
+
+5. Scroll up to the **Configuration** tab, select **Environment variables**, and add the following:
+
+   | Key | Value |
+   |---|---|
+   | `SNS_TOPIC_ARN` | The SNS topic ARN you copied in Step 2 |
+
+---
+
+## Step 6: Grant Lambda Permission to Publish to SNS
+
+1. In the AWS Console, navigate to **IAM → Roles**.
+2. Find and open the execution role that was created for `S3ToSNSLambda`.
+3. Click **Add permissions → Attach policies**.
+4. Attach the following policies:
+
+   | Policy | Purpose |
+   |---|---|
+   | `AWSLambdaBasicExecutionRole` | Allows Lambda to write logs to CloudWatch |
+   | `AmazonSNSFullAccess` | Allows Lambda to publish to SNS topics |
+
+   > For production environments, replace `AmazonSNSFullAccess` with a custom inline policy scoped to `sns:Publish` on your specific topic ARN only.
+
+---
+
+## Step 7: Update the SNS Topic Access Policy
+
+1. Navigate back to your SNS topic in the SNS console.
+2. Scroll down to the **Access policy** section and click **Edit**.
+3. Replace the existing policy with the following, substituting your account number and region:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Action": "SNS:Publish",
+      "Resource": "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:s3-email-notification",
+      "Condition": {
+        "ArnEquals": {
+          "aws:SourceArn": "arn:aws:lambda:us-east-1:YOUR_ACCOUNT_ID:function:S3ToSNSLambda"
+        }
+      }
     }
+  ]
+}
+```
 
-'''
+4. Click **Save changes**.
 
-4. Click Save Changes.
+---
 
-### Step 8: Configure S3# to Trigger Lambda
+## Step 8: Configure S3 to Trigger Lambda
 
-1. Go to S3 Tab.
+1. Navigate to your S3 bucket in the S3 console.
+2. Click the **Properties** tab.
+3. Scroll down to **Event notifications** and click **Create event notification**.
+4. Configure the notification with the following settings:
 
-2. Open your s3 bucket (s3snslambda-project)
+   | Field | Value |
+   |---|---|
+   | Event name | `TriggerLambdaOnUpload` |
+   | Event types | `s3:ObjectCreated:Put` |
+   | Destination | Lambda function |
+   | Lambda function | `S3ToSNSLambda` |
 
-3. Click Properties, scroll to Event Notifications
+5. Click **Save changes**.
 
-![](/attachments/select-properties.png)
+---
 
-4. Click Create Event Notification.
+## Step 9: Test the Pipeline
 
-![](/attachments/event-notification.png)
+1. Navigate to your S3 bucket and upload any file.
+2. Wait 15–30 seconds.
+3. Check your email inbox for a notification with the file name, size, region, and a direct console link.
 
-5. Event name (TriggerLambdaOnUpload)
+A successful notification will look similar to this:
 
-6. Event types (All object create events [PUT])
+```
+Subject: S3 Upload Notification
 
-![](/attachments/put.png)
+New S3 Upload Notification
 
-7. Destination -> Select Lambda Function
+Bucket: s3snslambda-project
+File:   example.pdf
+Size:   204800 bytes
+Time:   2025-01-15T14:32:01.000Z
+Region: us-east-1
+Event:  ObjectCreated:Put
 
-8. Choose S3toSNSLambda.
+View file: https://s3.console.aws.amazon.com/s3/object/...
+```
 
-9. Click Save.
+---
 
+## Troubleshooting
 
-### Step 9: Test Setup
+| Symptom | Likely Cause | Resolution |
+|---|---|---|
+| No email received | Subscription not confirmed | Check your inbox/spam for the AWS confirmation email and click the link |
+| No email received | `SNS_TOPIC_ARN` not set | Verify the environment variable is configured on the Lambda function |
+| Lambda execution error | Missing IAM permissions | Confirm `AWSLambdaBasicExecutionRole` and `sns:Publish` are attached to the Lambda role |
+| Lambda not triggered | S3 event notification misconfigured | Confirm the event type is `s3:ObjectCreated:Put` and destination is set to the correct Lambda function |
+| SNS publish error | Topic access policy too restrictive | Verify the `aws:SourceArn` condition in the SNS topic policy matches the Lambda function ARN exactly |
 
-1. Go to S3 and upload a file into your bucket.
-
-2. Wait a few seconds to a few minutes.
-
-3. Check your email inbox for the SNS notification.
-
-![](/attachments/confirmation.png)
-
-
-
-### Troubleshooting if there is no delivery
-
-1. First test sns directly from the console, if working then go to role and 
-    check that you gave proper permissions.
-
-2. If doesn't work still retry entire and be very careful.
-
-3. Check to make sure your topic ARN is in the python code where the environment variable is being created...
+For deeper investigation, open **CloudWatch → Log groups → /aws/lambda/S3ToSNSLambda** to review Lambda execution logs for each invocation.

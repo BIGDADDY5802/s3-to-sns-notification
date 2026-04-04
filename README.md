@@ -105,10 +105,7 @@
 2. Scroll down to Code Source.
 
 3. Replace Default Code with:
-
-
-'''py
-    
+```py    
     import json
     import boto3
     import os
@@ -198,8 +195,7 @@
                 "statusCode": 500,
                 "body": json.dumps(f"Lambda execution failed: {str(e)}")
             }
-
-'''py
+```
 
 
 
@@ -233,7 +229,7 @@ AmazonSNSFullAccess (or create a custom policy with sns:Publish)
 Replace the existing policy with the following (update Your_Account_Number_Here and Lambda function name):
 
 
-'''
+```json
       
         {
     "Version": "2012-10-17",
@@ -253,8 +249,7 @@ Replace the existing policy with the following (update Your_Account_Number_Here 
         }
     ]
     }
-
-'''
+```
 
 4. Click Save Changes.
 
